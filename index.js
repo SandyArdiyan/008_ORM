@@ -22,34 +22,46 @@ db.sequelize.sync()
   console.log(err);
 });
 
+// --- RUTE API ---
+
+// 1. Rute untuk membuat Komik baru
 app.post('/Komiks', async (req, res) => {
   const data = req.body;
   try {
     const Komik = await db.Komik.create(data);
+    res.status(201).send(Komik); // 201 = Created
+  } catch (err) {
+    res.status(500).send({ message: 'Gagal membuat Komik', error: err.message });
+  }
+});
+
+// 2. Rute untuk mengambil SEMUA Komik
+app.get('/Komiks', async (req, res) => {
+  try {
+    const Komiks = await db.Komik.findAll();
+    res.send(Komiks);
+  } catch (err) {
+    res.status(500).send({ message: 'Gagal mengambil data', error: err.message });
+  }
+});
+
+// 3. Rute untuk mengambil SATU Komik berdasarkan ID (YANG HILANG)
+app.get('/Komiks/:id', async (req, res) => {
+  const id = req.params.id;
+  try {
+    const Komik = await db.Komik.findByPk(id);
+
+    if (!Komik) {
+      return res.status(404).send({ message: 'Komik tidak di temukan' });
+    }
     res.send(Komik);
   } catch (err) {
-    res.send(err);
+    res.status(500).send({ message: 'Gagal mengambil data', error: err.message });
   }
 });
 
-app.get('/Komiks', async (req, res) => {
-  try {
-    const Komiks = await db.Komik.findAll();
-    res.send(Komiks);
-  } catch (err) {
-    res.send(err);
-  }
-});
 
-app.get('/Komiks', async (req, res) => {
-  try {
-    const Komiks = await db.Komik.findAll();
-    res.send(Komiks);
-  } catch (err) {
-    res.send(err);
-  }
-});
-
+// 4. Rute untuk meng-update Komik berdasarkan ID
 app.put('/Komiks/:id', async (req, res) => {
   const id = req.params.id;
   const data = req.body; 
@@ -60,19 +72,21 @@ app.put('/Komiks/:id', async (req, res) => {
     if (!Komik) {
       return res.status(404).send({ message: 'Komik tidak di temukan' });
     }
+    
     await Komik.update(data);
-
-    res.send(Komik);
+    res.send(Komik); // Kirim data yang sudah di-update
 
   } catch (err) {
-    res.status(500).send(err);
+    res.status(500).send({ message: 'Gagal meng-update Komik', error: err.message });
   }
 });
 
+// 5. Rute untuk menghapus Komik berdasarkan ID
 app.delete('/Komiks/:id', async (req, res) => {
   const id = req.params.id;
   try {
     const Komik = await db.Komik.findByPk(id);
+    
     if (!Komik) {
       return res.status(404).send({ message: 'Komik tidak di temukan' });
     }
@@ -80,8 +94,6 @@ app.delete('/Komiks/:id', async (req, res) => {
     await Komik.destroy();
     res.send({ message: 'Komik berhasil di hapus' });
   } catch (err) {
-    res.status(500).send(err);
+    res.status(500).send({ message: 'Gagal menghapus Komik', error: err.message });
   }
 });
-
-  
